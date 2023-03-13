@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React from 'react';
 import { Form, Button, Alert, Container, ListGroup, Image } from 'react-bootstrap';
- import Weather from './Weather';
+//  import Weather from './Weather';
 
 class App extends React.Component {
 
@@ -59,14 +59,14 @@ class App extends React.Component {
       console.log(error);
     }
   }
-  
+
   
   render() {
 
-    let weatherComponent = <></>;
-    if (Object.keys(this.state.weatherData).length !== 0) {
-      weatherComponent = <Weather weatherData={this.state.weatherData} />
-    }
+    // let weatherComponent = <></>;
+    // if (Object.keys(this.state.weatherData).length !== 0) {
+    //   weatherComponent = <Weather weatherData={this.state.weatherData} />
+    // }
 
 
 
