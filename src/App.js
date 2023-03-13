@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React from 'react';
-import { Form, Button, Alert, Container, ListGroup, Image } from 'react-bootstrap';
+import { Form, Button, Container, ListGroup, Image } from 'react-bootstrap';
 //  import Weather from './Weather';
 import "./index.css";
 class App extends React.Component {
@@ -17,6 +17,7 @@ class App extends React.Component {
       errorMessage: ''
     }
   }
+  
 
   handleInput = (e) => {
     this.setState({
