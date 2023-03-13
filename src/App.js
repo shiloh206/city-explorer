@@ -14,10 +14,11 @@ class App extends React.Component {
       cityMap: '',
       weatherData: {},
       error: false,
-      errorMessage: ''
+      errorMessage: '',
+      allData: []
     }
   }
-  
+
 
   handleInput = (e) => {
     this.setState({
@@ -28,13 +29,19 @@ class App extends React.Component {
   getCityData = async (e) => {
     e.preventDefault();
     try {
-      //https://us1.locationiq.com/v1/search.php?key=pk.6df6ac4f8f5f176778a8661fe06288b7&q=Seattle&format=json
-
-//https://maps.locationiq.com/v3/staticmap?key=pk.6df6ac4f8f5f176778a8661fe06288b7&center=45.5202471,-122.674194&zoom=12
-
       let cityDataFromAxios = await axios.get(`https://us1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_API_KEY}&q=${this.state.city}&format=json`);
-     console.log(cityDataFromAxios)
-      let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${cityDataFromAxios.data[0].lat},${cityDataFromAxios.data[0].lon}&zoom=12`
+     
+      let cityMapArray = [];
+      cityDataFromAxios.data.map(element => {
+        let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${element.lat},${element.lon}&zoom=12`
+        console.log("TESS", cityMap)
+        cityMapArray.push(cityMap); 
+        return element;
+      });
+      this.setState({ allData: cityMapArray }); 
+
+       let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${cityDataFromAxios.data[0].lat},${cityDataFromAxios.data[0].lon}&zoom=12`
+     console.log(cityMap)
       this.setState({
         cityData: cityDataFromAxios.data,
        cityMap: cityMap,
@@ -69,7 +76,7 @@ class App extends React.Component {
     //   weatherComponent = <Weather weatherData={this.state.weatherData} />
     // }
 
-
+    console.log(this.state.allData)
 
     return (
       <>
@@ -94,7 +101,10 @@ class App extends React.Component {
               <ListGroup.Item>Latitude: {this.state.cityData.lat}</ListGroup.Item>
               <ListGroup.Item>Longitude: {this.state.cityData.lon}</ListGroup.Item>
             </ListGroup>
-            <Image src={this.state.cityMap} />
+            {this.state.allData.map(element => {
+             
+              return (<Image src={element} />)
+            })}
           </Container>
         } 
        
