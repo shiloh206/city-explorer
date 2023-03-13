@@ -2,7 +2,7 @@ import axios from 'axios';
 import React from 'react';
 import { Form, Button, Alert, Container, ListGroup, Image } from 'react-bootstrap';
 //  import Weather from './Weather';
-
+import "./index.css";
 class App extends React.Component {
 
   constructor(props) {
@@ -82,7 +82,10 @@ class App extends React.Component {
         </Form>
 
         {this.state.error ?
-          <Alert variant="warning">{this.state.errorMessage}</Alert>
+          <div className='ERRORS'>
+          <h1>Something went wrong. Error of {this.state.errorMessage}</h1>
+          <p>Please try again later. Or enter a valid City Name</p>
+        </div>
           :
           <Container>
             <ListGroup as='list-group'>
