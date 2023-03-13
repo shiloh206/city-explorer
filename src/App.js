@@ -60,12 +60,15 @@ class App extends React.Component {
     }
   }
   
+  
   render() {
 
     let weatherComponent = <></>;
     if (Object.keys(this.state.weatherData).length !== 0) {
       weatherComponent = <Weather weatherData={this.state.weatherData} />
     }
+
+
 
     return (
       <>
