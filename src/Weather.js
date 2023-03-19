@@ -1,10 +1,18 @@
 import React from "react";
+import { ListGroup } from "react-bootstrap";
 
 
-export default class Weather extends React.Component{
+class Weather extends React.Component{
     render(){
         return(
-            <div></div>
+            <>
+        {this.props.weatherData.map((day, index) => {
+          return <ListGroup.Item key={index}>{day.date}, {day.description}</ListGroup.Item>
+        })
+        };
+      </>
         )
     }
 }
+
+export default Weather;

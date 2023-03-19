@@ -1,8 +1,8 @@
 import axios from 'axios';
 import React from 'react';
 import { Form, Button, Container, ListGroup, Image } from 'react-bootstrap';
-//  import Weather from './Weather';
 import "./index.css";
+import Weather from './Weather';
 class App extends React.Component {
 
   constructor(props) {
@@ -12,7 +12,7 @@ class App extends React.Component {
       cityName: '',
       cityData: {},
       cityMap: '',
-      weatherData: {},
+      weatherData: [],
       error: false,
       errorMessage: '',
       allData: []
@@ -22,8 +22,9 @@ class App extends React.Component {
 
   handleInput = (e) => {
     this.setState({
-      city: e.target.value
-    });
+      city: e.target.value,
+      cityName: e.target.value
+    }); 
   }
 
   getCityData = async (e) => {
@@ -34,21 +35,23 @@ class App extends React.Component {
       let cityMapArray = [];
       cityDataFromAxios.data.map(element => {
         let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${element.lat},${element.lon}&zoom=12`
-        console.log("TESS", cityMap)
+        // console.log("TESS", cityMap)
         cityMapArray.push(cityMap); 
         return element;
       });
       this.setState({ allData: cityMapArray }); 
 
        let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${cityDataFromAxios.data[0].lat},${cityDataFromAxios.data[0].lon}&zoom=12`
-     console.log(cityMap)
       this.setState({
         cityData: cityDataFromAxios.data,
        cityMap: cityMap,
         error: false
+      },() => {
+        // console.log(this.state.cityData)
+        this.handleGetWeather(cityDataFromAxios.data[0].lat, cityDataFromAxios.data[0].lon);
       });
-   //   this.handleGetWeather(cityDataFromAxios.data[0].lat, cityDataFromAxios.data[0].lon);
     } catch (error) {
+
       this.setState({
         error: true,
         errorMessage: `${error.message}`
@@ -58,23 +61,18 @@ class App extends React.Component {
 
   handleGetWeather = async (lat, lon) => {
     try {
-      let url = `${process.env.REACT_APP_SERVER}/weather?lat=${lat}&lon=${lon}`
+      let url = `${process.env.REACT_APP_SERVER}/weather?lat=${lat}&lon=${lon}&cityName=${this.state.cityName}`
       let weatherDataFromAxios = await axios.get(url);
       this.setState({
         weatherData: weatherDataFromAxios.data
       })
     } catch (error) {
-      console.log(error);
+  
     }
   }
 
   
   render() {
-
-    // let weatherComponent = <></>;
-    // if (Object.keys(this.state.weatherData).length !== 0) {
-    //   weatherComponent = <Weather weatherData={this.state.weatherData} />
-    // }
 
     console.log(this.state.allData)
 
@@ -97,9 +95,9 @@ class App extends React.Component {
           :
           <Container>
             <ListGroup as='list-group'>
-              <ListGroup.Item>City: {this.state.cityData.display_name}</ListGroup.Item>
-              <ListGroup.Item>Latitude: {this.state.cityData.lat}</ListGroup.Item>
-              <ListGroup.Item>Longitude: {this.state.cityData.lon}</ListGroup.Item>
+              <ListGroup.Item>City: {this.state.cityData[0]?.display_name}</ListGroup.Item>
+              <ListGroup.Item>Latitude: {this.state.cityData[0]?.lat}</ListGroup.Item>
+              <ListGroup.Item>Longitude: {this.state.cityData[0]?.lon}</ListGroup.Item>
             </ListGroup>
             {this.state.allData.map(element => {
              
@@ -107,6 +105,7 @@ class App extends React.Component {
             })}
           </Container>
         } 
+        <Weather weatherData={this.state.weatherData}/>
        
       </>
     );
