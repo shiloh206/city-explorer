@@ -1,84 +1,102 @@
-import axios from 'axios';
 import React from 'react';
-import { Form, Button, Container, ListGroup, Image } from 'react-bootstrap';
-import "./index.css";
-import Weather from './Weather';
-class App extends React.Component {
+import './App.css';
+import axios from 'axios';
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button'
+import ListGroup from 'react-bootstrap/ListGroup';
+import Image from 'react-bootstrap/Image';
+import Alert from 'react-bootstrap/Alert';
+import Container from 'react-bootstrap/Container';
+import Weather from './components/Weather';
+import Movies from './components/Movies'
 
+class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       city: '',
-      cityName: '',
-      cityData: {},
-      cityMap: '',
-      weatherData: [],
+      cityData: [],
       error: false,
       errorMessage: '',
-      allData: []
+      cityMap: '',
+      weatherData: [],
+      movieResults: [],
     }
   }
-
-
   handleInput = (e) => {
     this.setState({
-      city: e.target.value,
-      cityName: e.target.value
-    }); 
+      city: e.target.value
+    })
   }
-
   getCityData = async (e) => {
     e.preventDefault();
+
     try {
-      let cityDataFromAxios = await axios.get(`https://us1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_API_KEY}&q=${this.state.city}&format=json`);
-     
-      let cityMapArray = [];
-      cityDataFromAxios.data.map(element => {
-        let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${element.lat},${element.lon}&zoom=12`
-        // console.log("TESS", cityMap)
-        cityMapArray.push(cityMap); 
-        return element;
-      });
-      this.setState({ allData: cityMapArray }); 
+      let url = `https://us1.locationiq.com/v1/search?key=${process.env.REACT_APP_LOCATION_API_KEY}&q=${this.state.city}&format=json`
 
-       let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${cityDataFromAxios.data[0].lat},${cityDataFromAxios.data[0].lon}&zoom=12`
+      let cityDataFromAxios = await axios.get(url)
+
+      let cityMap = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_API_KEY}&center=${cityDataFromAxios.data[0].lat},${cityDataFromAxios.data[0].lon}&zoom=10`;
+
+      let lat = cityDataFromAxios.data[0].lat;
+      let lon = cityDataFromAxios.data[0].lon;
+
+      this.handleGetWeather(lat, lon);
+      this.handleGetMovies();
+
       this.setState({
-        cityData: cityDataFromAxios.data,
-       cityMap: cityMap,
+        cityData: cityDataFromAxios.data[0],
+        cityMap: cityMap,
         error: false
-      },() => {
-        // console.log(this.state.cityData)
-        this.handleGetWeather(cityDataFromAxios.data[0].lat, cityDataFromAxios.data[0].lon);
-      });
-    } catch (error) {
+      })
 
+    } catch (error) {
+      this.setState({
+        error: true,
+        errorMessage: `${error.message}`
+      })
+    }
+
+  }
+
+  handleGetWeather = async (lat, lon) => {
+    try {
+      let url = `${process.env.REACT_APP_SERVER}/weather?searchQuery=${this.state.city}&lat=${lat}&lon=${lon}`
+
+      let weatherDataFromAxios = await axios.get(url);
+
+      this.setState({
+        weatherData: weatherDataFromAxios.data
+      })
+    } catch (error) {
       this.setState({
         error: true,
         errorMessage: `${error.message}`
       })
     }
   }
-
-  handleGetWeather = async (lat, lon) => {
+  handleGetMovies = async () => {
     try {
-      let url = `${process.env.REACT_APP_SERVER}/weather?lat=${lat}&lon=${lon}&cityName=${this.state.cityName}`
-      let weatherDataFromAxios = await axios.get(url);
+      let url = `${process.env.REACT_APP_SERVER}/movies?searchQuery=${this.state.city}`
+
+      let movieDataFromAxios = await axios.get(url);
+
+
       this.setState({
-        weatherData: weatherDataFromAxios.data
+        movieResults: movieDataFromAxios.data
+        
       })
     } catch (error) {
-  
+      this.setState({
+        error: true,
+        errorMessage: `${error.message}`
+      })
     }
   }
-
-  
   render() {
-
-    console.log(this.state.allData)
-
     return (
       <>
-        <h1>City Explore</h1>
+        <h1>City Explorer</h1>
         <Form onSubmit={this.getCityData}>
           <Form.Group>
             <Form.Label as='form-label'>City Name:</Form.Label>
@@ -87,30 +105,28 @@ class App extends React.Component {
           </Form.Group>
         </Form>
 
-        {this.state.error ?
-          <div className='ERRORS'>
-          <h1>Something went wrong. Error of {this.state.errorMessage}</h1>
-          <p>Please try again later. Or enter a valid City Name</p>
-        </div>
-          :
-          <Container>
-            <ListGroup as='list-group'>
-              <ListGroup.Item>City: {this.state.cityData[0]?.display_name}</ListGroup.Item>
-              <ListGroup.Item>Latitude: {this.state.cityData[0]?.lat}</ListGroup.Item>
-              <ListGroup.Item>Longitude: {this.state.cityData[0]?.lon}</ListGroup.Item>
-            </ListGroup>
-            {this.state.allData.map(element => {
-             
-              return (<Image src={element} />)
-            })}
-          </Container>
-        } 
-        <Weather weatherData={this.state.weatherData}/>
-       
+        {
+          this.state.error
+            ? <Alert variant="warning">{this.state.errorMessage}</Alert>
+            : <Container>
+              <ListGroup as='list-group'>
+                <ListGroup.Item>City: {this.state.cityData.display_name}</ListGroup.Item>
+                <ListGroup.Item>Latitude: {this.state.cityData.lat}</ListGroup.Item>
+                <ListGroup.Item>Longitude: {this.state.cityData.lon}</ListGroup.Item>
+              </ListGroup>
+              <Image src={this.state.cityMap}></Image>
+            </Container>
+        }
+        <Weather 
+          weatherData={this.state.weatherData}
+        />
+        <Movies
+        movieResults={this.state.movieResults}
+        />
       </>
-    );
+    )
   }
 }
 
-export default App;
 
+export default App;
